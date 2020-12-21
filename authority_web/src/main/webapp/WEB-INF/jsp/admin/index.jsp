@@ -25,7 +25,7 @@
 			<div class="layui-logo" style="font-weight: bold; font-size: 20px;">后台管理平台</div>
 			<ul class="layui-nav layui-layout-right">
 				<li class="layui-nav-item"><a href="javascript:;"> <img
-						src="http://t.cn/RCzsdCq" class="layui-nav-img">${sessionScope.user.nickname}
+						src="" id="userImg" data-img="${requestScope.user.userImg}" class="layui-nav-img" alt="">${sessionScope.user.nickname}
 				</a>
 				</li>
 				<li class="layui-nav-item"><a href="${ctx}/logout">注销</a></li>
@@ -83,6 +83,24 @@
 		layui.use('element', function() {
 			var element = layui.element;
 		});
+
+		var imgs = document.getElementById("userImg");
+
+		var xhr = new XMLHttpRequest();
+		var url = '${ctx}/user/getImgStream';
+		xhr.open('get',url,true);
+		xhr.responseType = "blob";
+		xhr.onload = function (){
+			if (this.status == 200){
+				var blob = this.response;
+				imgs.onload = function (e) {
+					window.URL.revokeObjectURL(imgs.src);
+				};
+				imgs.src = window.URL.createObjectURL(blob);
+				console.log(imgs);
+			}
+		}
+		xhr.send();
 	</script>
 </body>
 </html>

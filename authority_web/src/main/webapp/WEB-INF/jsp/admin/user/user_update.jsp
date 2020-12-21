@@ -6,11 +6,11 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>用户修改</title>
 <%@ include file="/static/base/common.jspf"%>
-<script type="text/javascript" src="${ctx}/static/js/hp_form.js"></script>
+<%--<script type="text/javascript" src="${ctx}/static/js/hp_form.js"></script>--%>
 </head>
 <body>
 	<div class="body_main">
-		<form class="layui-form layui-form-pane" action="${ctx}/user/update">
+		<form class="layui-form layui-form-pane" enctype="multipart/form-data">
 			<input type="hidden" value="${user.id}" name="id">
 			<div class="layui-form-item">
 				<label class="layui-form-label">昵称</label>
@@ -66,8 +66,9 @@
 			<div class="layui-form-item">
 				<label class="layui-form-label">头像</label>
 				<div class="layui-input-block">
-					<input type="file" name="userImg" autocomplete="off" value="${user.userImg}"
-						placeholder="请输入头像" class="layui-input">
+					<input id="upload" type="file" name="userImg" autocomplete="off" value="${user.userImg}"
+						   placeholder="请选择头像" class="layui-input">
+
 				</div>
 			</div>
 			<div class="layui-form-item">
@@ -96,6 +97,52 @@
 			return false;
 		}
 	}
+
+
+	layui.use(['form','upload'], function() {
+		// console.log("haha");
+		var form = layui.form;
+		// var upload = layui.upload;
+		//通用弹出层表单提交方法
+		form.on('submit(demo1)', function(data){
+			// console.log(data.field);
+			// console.log(data);
+			let action = "${ctx}/user/update";
+
+			var file = $('#upload')[0].files[0];
+
+			var formData = new FormData();
+			formData.append('user',JSON.stringify(data.field));
+			formData.append('file',file)
+			console.log(formData);
+
+			if(action.indexOf('user') != -1 && !checkPhone()){
+				return false;
+			}
+
+			$.ajax({
+				url:action,
+				type:'POST',
+				async:false,
+				data: formData,
+				contentType:false,
+				processData:false,
+				success:function (e) {
+					if (e.result==true) {
+						parent.closeLayer(e.msg);
+					}else {
+						layer.msg('操作失败：' + e.msg, {icon: 2, time: 2000});
+					}
+				},
+				error:function (e) {
+					console.log(e);
+				}
+			});
+
+			return false;
+		})
+
+	});
 </script>
 </body>
 </html>

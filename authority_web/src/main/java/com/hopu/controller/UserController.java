@@ -1,5 +1,6 @@
 package com.hopu.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,11 +20,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.hopu.result.ResponseEntity.*;
 
@@ -75,7 +78,8 @@ public class UserController {
 
     @RequestMapping("save")
     @ResponseBody
-    public ResponseEntity addUser(User user){
+    public ResponseEntity addUser(@RequestParam(value = "user") String user1,@RequestParam(value = "file") MultipartFile file){
+        User user = JSONObject.parseObject(user1, User.class);
         QueryWrapper<User> queryWrapper = new QueryWrapper<User>();
         queryWrapper.eq("user_name",user.getUserName());
         User one = userService.getOne(queryWrapper);
@@ -86,7 +90,10 @@ public class UserController {
         user.setSalt(UUIDUtils.getID());
         ShiroUtils.encPass(user);
         user.setCreateTime(new Date());
+        String imgName = UUIDUtils.getID()+ file.getOriginalFilename();
+        user.setUserImg(imgName);
         userService.save(user);
+        userService.addPic(imgName,file);
         return success();
     }
 
@@ -100,9 +107,14 @@ public class UserController {
 
     @ResponseBody
     @RequestMapping("update")
-    public ResponseEntity updateUser(User user){
+    public ResponseEntity updateUser(@RequestParam(value = "user") String user1,@RequestParam(value = "file") MultipartFile file){
+        User user = JSONObject.parseObject(user1, User.class);
         ShiroUtils.encPass(user);
         user.setUpdateTime(new Date());
+        String imgName = UUIDUtils.getID()+ file.getOriginalFilename();
+        String userImg = user.getUserImg();
+        user.setUserImg(imgName);
+        userService.updatePic(userImg,imgName,file);
         userService.updateById(user);
         return success();
     }
@@ -119,7 +131,9 @@ public class UserController {
                 }
                 list.add(user.getId());
             }
+            List<String> UserImgs = users.stream().map(User::getUserImg).collect(Collectors.toList());
             userService.removeByIds(list);
+            userService.deletePics(UserImgs);
         } catch (Exception e) {
             e.printStackTrace();
             return error(e.getMessage());

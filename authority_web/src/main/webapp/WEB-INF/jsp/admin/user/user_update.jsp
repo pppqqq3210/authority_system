@@ -68,8 +68,9 @@
 				<div class="layui-input-block">
 					<input id="upload" type="file" name="userImg" autocomplete="off" value="${user.userImg}"
 						   placeholder="请选择头像" class="layui-input">
-
+                    <img src="" id="userImg" data-img="${user.userImg}" class="layui-nav-img" alt="">
 				</div>
+
 			</div>
 			<div class="layui-form-item">
 				<label class="layui-form-label">状态</label>
@@ -97,7 +98,23 @@
 			return false;
 		}
 	}
+    var imgs = document.getElementById("userImg");
 
+    var xhr = new XMLHttpRequest();
+    var url = '${ctx}/user/getImgStream';
+    xhr.open('get',url,true);
+    xhr.responseType = "blob";
+    xhr.onload = function (){
+        if (this.readyState==4&&this.status == 200){
+            var blob = this.response;
+            imgs.onload = function (e) {
+                window.URL.revokeObjectURL(imgs.src);
+            };
+            imgs.src = window.URL.createObjectURL(blob);
+            console.log(imgs);
+        }
+    }
+    xhr.send();
 
 	layui.use(['form','upload'], function() {
 		// console.log("haha");

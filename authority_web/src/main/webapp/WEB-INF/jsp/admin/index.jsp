@@ -91,7 +91,7 @@
 		xhr.open('get',url,true);
 		xhr.responseType = "blob";
 		xhr.onload = function (){
-			if (this.status == 200){
+			if (this.readyState==4&&this.status == 200){
 				var blob = this.response;
 				imgs.onload = function (e) {
 					window.URL.revokeObjectURL(imgs.src);
